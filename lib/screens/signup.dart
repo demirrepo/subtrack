@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:subtrack/screens/signin.dart';
 import '../services/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -286,12 +287,19 @@ class _SignupState extends State<Signup> {
               // Footer pinned to the bottom with spacing
               Padding(
                 padding: const EdgeInsets.only(bottom: 28),
-                child: Text(
-                  "Already have an account? Log in.",
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (context) => Signin()));
+                  },
+                  child: Text(
+                    "Already have an account? Log in.",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ),
