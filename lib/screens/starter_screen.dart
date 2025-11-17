@@ -60,7 +60,7 @@ class _StarterScreenState extends State<StarterScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
                             "TRACK",
@@ -76,19 +76,33 @@ class _StarterScreenState extends State<StarterScreen>
                             style: GoogleFonts.playwriteUsTrad(
                               color: Colors.white70,
                               fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.bold,
                               fontSize: 22,
                             ),
                           ),
                         ],
                       ),
-                      Text(
-                        "SUBSCRIPTIONS",
-                        style: GoogleFonts.poppins(
-                          color: accent,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 28,
+                      Transform.translate(
+                        offset: const Offset(0, -20),
+                        child: Text(
+                          "SUBSCRIPTIONS",
+                          style: GoogleFonts.poppins(
+                            color: accent,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 28,
+                          ),
                         ),
+                      ),
+
+                      Row(
+                        children: [
+                          SizedBox(width: 30),
+                          Image.asset(
+                            'lib/assets/images/stpageimage.png',
+                            width: 300,
+                            height: 300,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -99,12 +113,6 @@ class _StarterScreenState extends State<StarterScreen>
               const Spacer(),
 
               // Optional subtitle / short pitch
-              Text(
-                "Manage all your recurring payments. Never miss a bill again.",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
-              ),
-
               const SizedBox(height: 44),
 
               // CTA button pinned to bottom area

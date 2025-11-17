@@ -114,8 +114,8 @@ class _SignupState extends State<Signup> {
                         "SIGN UP",
                         style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -125,7 +125,7 @@ class _SignupState extends State<Signup> {
                         child: TextField(
                           controller: usernameController,
                           style: GoogleFonts.inter(
-                            fontSize: 17,
+                            fontSize: 15,
                             color: Colors.white,
                             fontWeight: FontWeight.w300,
                           ),
@@ -146,7 +146,7 @@ class _SignupState extends State<Signup> {
                         child: TextField(
                           controller: emailController,
                           style: GoogleFonts.inter(
-                            fontSize: 17,
+                            fontSize: 15,
                             color: Colors.white,
                             fontWeight: FontWeight.w300,
                           ),
@@ -168,7 +168,7 @@ class _SignupState extends State<Signup> {
                           obscureText: _passwordVisible,
                           controller: passwordController,
                           style: GoogleFonts.inter(
-                            fontSize: 17,
+                            fontSize: 15,
                             color: Colors.white,
                             fontWeight: FontWeight.w300,
                           ),
@@ -207,7 +207,7 @@ class _SignupState extends State<Signup> {
                       const SizedBox(height: 55),
 
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
                         child: SizedBox(
                           height: 53,
                           width: double.infinity,
@@ -249,7 +249,7 @@ class _SignupState extends State<Signup> {
                       const SizedBox(height: 20),
 
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
                         child: SizedBox(
                           height: 53,
                           width: double.infinity,
@@ -294,7 +294,7 @@ class _SignupState extends State<Signup> {
                     ).push(MaterialPageRoute(builder: (context) => Signin()));
                   },
                   child: Text(
-                    "Already have an account? Log in.",
+                    "Already registered? Sign in.",
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: Colors.white70,

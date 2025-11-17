@@ -27,5 +27,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: StackSansText
+      fonts:
+        - asset: lib/assets/fonts/StackSansText.ttf
+
   assets:
     - lib/assets/images/google.png
+    - lib/assets/images/stpageimage.png
