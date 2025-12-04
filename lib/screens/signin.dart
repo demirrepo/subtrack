@@ -1,11 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:subtrack/screens/signup.dart';
-import '../services/auth_service.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:subtrack/screens/dashboard.dart';
+import 'package:subtrack/screens/signup.dart';
+import '../services/auth_service.dart';
 
 class Signin extends StatefulWidget {
+  const Signin({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _SigninState();
@@ -13,6 +18,7 @@ class Signin extends StatefulWidget {
 }
 
 class _SigninState extends State<Signin> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final auth = AuthService();
@@ -26,239 +32,298 @@ class _SigninState extends State<Signin> {
     super.dispose();
   }
 
-  Future<void> _handleEmailSignIn() async {
-    final String email = _emailController.text.trim();
-    final String password = _passwordController.text;
+  bool _isPasswordValid(String p) => p.trim().length >= 8;
 
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter email and password")),
-      );
-      return;
-    }
+  // Ensure user doc exists and return it
+  Future<Map<String, dynamic>?> _fetchOrCreateUserDoc(User user) async {
+    final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final snap = await docRef.get();
+    if (snap.exists) return snap.data();
+
+    // create minimal doc
+    await auth.createOrUpdateUserDoc(user: user, username: user.displayName);
+    final created = await docRef.get();
+    return created.exists ? created.data() : null;
+  }
+
+  Future<void> _handleEmailSignIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     setState(() => isLoading = true);
     try {
-      await auth.signIn(email, password);
+      final user = await auth.signIn(email, password);
+      if (user == null) throw Exception('Sign in returned null user');
+
+      // Ensure Firestore user doc exists
+      final userDoc = await _fetchOrCreateUserDoc(user);
+      if (kDebugMode) print('User doc after sign-in: $userDoc');
+
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Sign in success")));
-      // Navigate to dashboard
+      ).showSnackBar(const SnackBar(content: Text('Sign in successful')));
+
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => Dashboard()));
+      // TODO: navigate to dashboard / home and pass userDoc if needed
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Sign in failed: ${e.toString()}")),
+        SnackBar(content: Text('Sign in failed: ${e.toString()}')),
       );
-      if (kDebugMode) print(e);
+      if (kDebugMode) print('Sign in error: $e');
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   Future<void> _handleGoogleSignIn() async {
     setState(() => isLoading = true);
     try {
-      final user =
-          await auth.signUpWithGoogle(); // same method works for sign-in
+      // Make sure your AuthService exposes signInWithGoogle();
+      // if your service uses signUpWithGoogle() keep that name instead.
+      final user = await auth.signInWithGoogle();
       if (user == null) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Google sign-in cancelled")),
+          const SnackBar(content: Text('Google sign-in cancelled')),
         );
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Google sign-in success")));
-        // Navigate to dashboard
+        return;
       }
-    } catch (e) {
+
+      // Ensure Firestore user doc exists
+      final userDoc = await _fetchOrCreateUserDoc(user);
+      if (kDebugMode) print('Google user doc: $userDoc');
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Google sign-in failed: ${e.toString()}")),
+        const SnackBar(content: Text('Google sign-in successful')),
       );
-      if (kDebugMode) print(e);
+
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => Dashboard()));
+
+      // TODO: navigate to dashboard / home
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google sign-in failed: ${e.toString()}')),
+      );
+      if (kDebugMode) print('Google sign-in error: $e');
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    const accent = Color(0xFF0EB79E);
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF1C1D24),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          // outer padding (same as signup)
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Column(
             children: [
-              // Centered, non-scrollable form area
+              // form area (aligned to top, horizontally centered)
               Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisSize:
-                        MainAxisSize.min, // keep form compact & centered
-                    children: [
-                      Text(
-                        "LOG IN",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: TextField(
-                          controller: _emailController,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'LOG IN',
+                          style: GoogleFonts.poppins(
                             color: Colors.white,
-                            fontWeight: FontWeight.w300,
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                            fontSize: 34,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 9),
+                        const SizedBox(height: 20),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: TextField(
-                          obscureText: _passwordVisible,
-                          controller: _passwordController,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w300,
-                          ),
-                          keyboardType: TextInputType.visiblePassword,
-                          decoration: InputDecoration(
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });
-                                },
-                                icon:
-                                    _passwordVisible
-                                        ? FaIcon(
-                                          FontAwesomeIcons.eyeSlash,
-                                          color: Colors.white,
-                                          size: 17,
-                                        )
-                                        : FaIcon(
-                                          FontAwesomeIcons.eye,
-                                          color: Colors.white,
-                                          size: 17,
-                                        ),
-                              ),
-                            ),
-                            labelText: 'Password',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
+                        // inner padding matches signup (adds extra horizontal inset)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: _emailController,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: InputDecoration(
+                                    labelText: 'Email',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  validator: (v) {
+                                    final s = v?.trim() ?? '';
+                                    if (s.isEmpty)
+                                      return 'Please enter your email';
+                                    if (!RegExp(
+                                      r'^[^@]+@[^@]+\.[^@]+',
+                                    ).hasMatch(s))
+                                      return 'Enter a valid email';
+                                    return null;
+                                  },
+                                ),
 
-                      const SizedBox(height: 55),
+                                const SizedBox(height: 9),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: SizedBox(
-                          height: 53,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0EB79E),
-                              shape: ContinuousRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            onPressed: isLoading ? null : _handleEmailSignIn,
-                            child:
-                                isLoading
-                                    ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                    : Text(
-                                      "LOG IN",
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
+                                TextFormField(
+                                  obscureText: _passwordVisible,
+                                  controller: _passwordController,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                  keyboardType: TextInputType.visiblePassword,
+                                  decoration: InputDecoration(
+                                    suffixIcon: IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _passwordVisible = !_passwordVisible;
+                                        });
+                                      },
+                                      icon:
+                                          _passwordVisible
+                                              ? const FaIcon(
+                                                FontAwesomeIcons.eyeSlash,
+                                                color: Colors.white,
+                                                size: 17,
+                                              )
+                                              : const FaIcon(
+                                                FontAwesomeIcons.eye,
+                                                color: Colors.white,
+                                                size: 17,
+                                              ),
+                                    ),
+                                    labelText: 'Password',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  validator: (v) {
+                                    final s = v ?? '';
+                                    if (s.isEmpty)
+                                      return 'Please enter password';
+                                    if (!_isPasswordValid(s))
+                                      return 'Password must be at least 8 characters';
+                                    return null;
+                                  },
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                SizedBox(
+                                  height: 53,
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: accent,
+                                      shape: ContinuousRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
                                       ),
                                     ),
-                          ),
-                        ),
-                      ),
+                                    onPressed:
+                                        isLoading ? null : _handleEmailSignIn,
+                                    child:
+                                        isLoading
+                                            ? const CircularProgressIndicator(
+                                              color: Colors.white,
+                                            )
+                                            : Text(
+                                              'LOG IN',
+                                              style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                  ),
+                                ),
 
-                      const SizedBox(height: 20),
+                                const SizedBox(height: 20),
 
-                      Text(
-                        "OR",
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white,
-                        ),
-                      ),
+                                Text(
+                                  'OR',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
 
-                      const SizedBox(height: 20),
+                                const SizedBox(height: 20),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        child: SizedBox(
-                          height: 53,
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            icon: Image.asset(
-                              'lib/assets/images/google.png',
-                              width: 22,
-                              height: 22,
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF272833),
-                              shape: ContinuousRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            onPressed: isLoading ? null : _handleGoogleSignIn,
-                            label:
-                                isLoading
-                                    ? const SizedBox.shrink()
-                                    : Text(
-                                      "LOG IN WITH GOOGLE",
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
+                                SizedBox(
+                                  height: 53,
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    icon: Image.asset(
+                                      'lib/assets/images/google.png',
+                                      width: 22,
+                                      height: 22,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF272833),
+                                      shape: ContinuousRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
                                       ),
                                     ),
+                                    onPressed:
+                                        isLoading ? null : _handleGoogleSignIn,
+                                    label:
+                                        isLoading
+                                            ? const SizedBox.shrink()
+                                            : Text(
+                                              'LOG IN WITH GOOGLE',
+                                              style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              // Footer pinned to the bottom with spacing
+              // footer pinned to bottom with same spacing as signup
               Padding(
                 padding: const EdgeInsets.only(bottom: 28),
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute(builder: (context) => Signup()));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const Signup()),
+                    );
                   },
                   child: Text(
-                    "No account yet? Register now.",
+                    'No account yet? Register now.',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: Colors.white70,

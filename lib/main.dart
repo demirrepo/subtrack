@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/starter_screen.dart';
-import 'screens/signup.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,10 +26,6 @@ class MainApp extends StatelessWidget {
   }
 }
 
-/// Small stateful loader that initializes Firebase and shows:
-//  - a spinner while loading
-//  - an error + Retry button on failure
-//  - StarterScreen on success (you can change to Signup() if you prefer)
 class FirebaseInitializer extends StatefulWidget {
   const FirebaseInitializer({super.key});
 
@@ -48,7 +43,6 @@ class _FirebaseInitializerState extends State<FirebaseInitializer> {
   }
 
   Future<FirebaseApp> _initializeFirebase() {
-    // keep a timeout so the app doesn't hang indefinitely
     return Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     ).timeout(const Duration(seconds: 15));
@@ -65,12 +59,14 @@ class _FirebaseInitializerState extends State<FirebaseInitializer> {
     return FutureBuilder<FirebaseApp>(
       future: _initFuture,
       builder: (context, snapshot) {
+        /// loading
         if (snapshot.connectionState != ConnectionState.done) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
+        /// error
         if (snapshot.hasError) {
           return Scaffold(
             body: Center(
@@ -101,16 +97,6 @@ class _FirebaseInitializerState extends State<FirebaseInitializer> {
                       onPressed: _retry,
                       child: const Text('Retry'),
                     ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () {
-                        // fallback: allow entering the app without Firebase (optional)
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => Signup()),
-                        );
-                      },
-                      child: const Text('Continue without Firebase (dev)'),
-                    ),
                   ],
                 ),
               ),
@@ -118,7 +104,7 @@ class _FirebaseInitializerState extends State<FirebaseInitializer> {
           );
         }
 
-        // Success — show your starter screen
+        /// success: continue to your app
         return const StarterScreen();
       },
     );
