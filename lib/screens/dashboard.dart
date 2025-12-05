@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:subtrack/widgets/subscription_stat_card.dart';
+import 'package:subtrack/widgets/subscription_stat_card.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -9,7 +11,12 @@ class Dashboard extends StatefulWidget {
 }
 
 class _Dashboard extends State<Dashboard> {
-  final double totalSpending = 0.0;
+  final double totalSpending = 23.90;
+
+  final Color activeColor = Color(0xFF0EB79E);
+  final Color dueColor = Color(0xFFDC890D);
+  final numOfActiveSubs = 7;
+  final numOfDueSubs = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,7 @@ class _Dashboard extends State<Dashboard> {
           children: [
             SingleChildScrollView(
               child: Container(
-                height: 315,
+                height: MediaQuery.of(context).size.height * 0.38,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Color(0xFF272831),
@@ -29,13 +36,13 @@ class _Dashboard extends State<Dashboard> {
                   ),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    SizedBox(height: 65),
                     Text(
                       "\$ $totalSpending",
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 55,
+                        fontSize: 60,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -46,11 +53,47 @@ class _Dashboard extends State<Dashboard> {
                         fontSize: 15,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        // Now we need to add reusable widgets here. Showing current status of subs. Start from creating reusable widget in another file.
-                      ],
+                    Spacer(),
+
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(width: 13),
+                              // 1. Active subs card
+                              Expanded(
+                                flex: 2,
+                                child: SubscriptionStatCard.stat(
+                                  count: numOfActiveSubs,
+                                  label: 'ACTIVE \nSUBS',
+                                  color: activeColor,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              //2. Due subs card
+                              Expanded(
+                                flex: 2,
+                                child: SubscriptionStatCard.stat(
+                                  count: numOfDueSubs,
+                                  label: 'DUE \nSUBS',
+                                  color: dueColor,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              // 3. Add button
+                              Expanded(
+                                flex: 1,
+                                child: SubscriptionStatCard.addButton(),
+                              ),
+                              SizedBox(width: 13),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
