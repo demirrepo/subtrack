@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:subtrack/widgets/subscription_stat_card.dart';
-import 'package:subtrack/widgets/subscription_stat_card.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -24,76 +23,117 @@ class _Dashboard extends State<Dashboard> {
       body: SafeArea(
         child: Column(
           children: [
-            SingleChildScrollView(
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.38,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Color(0xFF272831),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
+            Container(
+              height: MediaQuery.of(context).size.height * 0.38,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color(0xFF272831),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
                 ),
-                child: Column(
-                  children: [
-                    SizedBox(height: 65),
-                    Text(
-                      "\$ $totalSpending",
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 60,
-                        fontWeight: FontWeight.w600,
-                      ),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(height: 65),
+                  Text(
+                    "\$ $totalSpending",
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 60,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Text(
-                      "Total spending",
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.5),
-                        fontSize: 15,
-                      ),
+                  ),
+                  Text(
+                    "Total spending",
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 15,
                     ),
-                    Spacer(),
+                  ),
+                  Spacer(),
 
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 40),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(width: 13),
-                              // 1. Active subs card
-                              Expanded(
-                                flex: 2,
-                                child: SubscriptionStatCard.stat(
-                                  count: numOfActiveSubs,
-                                  label: 'ACTIVE \nSUBS',
-                                  color: activeColor,
-                                ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(width: 13),
+                            // 1. Active subs card
+                            Expanded(
+                              flex: 2,
+                              child: SubscriptionStatCard.stat(
+                                count: numOfActiveSubs,
+                                label: 'ACTIVE \nSUBS',
+                                color: activeColor,
                               ),
-                              SizedBox(width: 10),
-                              //2. Due subs card
-                              Expanded(
-                                flex: 2,
-                                child: SubscriptionStatCard.stat(
-                                  count: numOfDueSubs,
-                                  label: 'DUE \nSUBS',
-                                  color: dueColor,
-                                ),
+                            ),
+                            SizedBox(width: 10),
+                            //2. Due subs card
+                            Expanded(
+                              flex: 2,
+                              child: SubscriptionStatCard.stat(
+                                count: numOfDueSubs,
+                                label: 'DUE \nSUBS',
+                                color: dueColor,
                               ),
-                              SizedBox(width: 10),
-                              // 3. Add button
-                              Expanded(
-                                flex: 1,
-                                child: SubscriptionStatCard.addButton(),
-                              ),
-                              SizedBox(width: 13),
-                            ],
-                          ),
+                            ),
+                            SizedBox(width: 10),
+                            // 3. Add button
+                            Expanded(
+                              flex: 1,
+                              child: SubscriptionStatCard.addButton(),
+                            ),
+                            SizedBox(width: 13),
+                          ],
                         ),
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20),
+
+            Container(
+              margin: EdgeInsets.only(left: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Your subscriptions",
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20),
+
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListView.builder(
+                      shrinkWrap:
+                          true, // Tells the ListView to only take the space its children need
+                      physics:
+                          const NeverScrollableScrollPhysics(), // Important: Prevents the inner ListView from scrolling independently
+                      itemCount: 10, // Example count
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text('Subscription ${index + 1}'),
+                        );
+                      },
                     ),
                   ],
                 ),
