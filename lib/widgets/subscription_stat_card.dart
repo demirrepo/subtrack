@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:subtrack/screens/add_subscription.dart';
 
 // Enum to define the three possible styles/states of the card.
 enum CardType { stat, addButton }
@@ -19,7 +20,7 @@ class SubscriptionStatCard extends StatelessWidget {
   }) : type = CardType.stat,
        super(key: key);
 
-  // Named constructor for the '+' 'addButton' card
+  // Named constructor for the '+' Add button card
   const SubscriptionStatCard.addButton({Key? key})
     : type = CardType.addButton,
       count = null,
@@ -29,17 +30,11 @@ class SubscriptionStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define the primary color for the card's container
-    const Color cardColor = Color.fromRGBO(
-      30,
-      30,
-      30,
-      1.0,
-    ); // Darker gray background
+    const Color cardColor = Color.fromRGBO(30, 30, 30, 1.0);
 
     return Container(
-      width: 100, // Fixed width for consistent look in the Row
-      height: 70, // Fixed height
+      width: 100,
+      height: 70,
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(15.0),
@@ -48,7 +43,7 @@ class SubscriptionStatCard extends StatelessWidget {
       child:
           type == CardType.stat
               ? _buildStatContent()
-              : _buildAddButtonContent(),
+              : _buildAddButtonContent(context),
     );
   }
 
@@ -58,7 +53,7 @@ class SubscriptionStatCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          count!.toString(), // Guaranteed not null for CardType.stat
+          count!.toString(),
           style: GoogleFonts.poppins(
             color: color,
             fontSize: 30,
@@ -67,7 +62,7 @@ class SubscriptionStatCard extends StatelessWidget {
         ),
         const SizedBox(width: 7.0),
         Text(
-          label!, // Guaranteed not null for CardType.stat
+          label!,
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: Colors.white70,
@@ -80,9 +75,17 @@ class SubscriptionStatCard extends StatelessWidget {
   }
 
   // Content builder for the '+' Add button card
-  Widget _buildAddButtonContent() {
-    return const Center(
-      child: Icon(Icons.add, color: Colors.white, size: 30.0),
+  Widget _buildAddButtonContent(BuildContext context) {
+    return Center(
+      child: IconButton(
+        icon: const Icon(Icons.add, color: Colors.white, size: 30),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddSubscriptionPage()),
+          );
+        },
+      ),
     );
   }
 }

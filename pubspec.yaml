@@ -19,6 +19,7 @@ dependencies:
   google_sign_in: ^6.2.1
   svg_icon: ^0.0.1
   animated_text_kit: ^4.3.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -36,3 +37,8 @@ flutter:
   assets:
     - lib/assets/images/google.png
     - lib/assets/images/stpageimage.png
+    - lib/assets/images/spotify.png
+    - lib/assets/images/telegram.png
+    - lib/assets/images/drive.png
+    - lib/assets/images/youtube.png
+    - lib/assets/images/netflix.png
